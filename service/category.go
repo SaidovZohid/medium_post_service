@@ -31,11 +31,7 @@ func (s *CategoryService) Create(ctx context.Context, req *pb.Category) (*pb.Cat
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Category{
-		Id:        category.ID,
-		Title:     category.Title,
-		CreatedAt: category.CreatedAt.Format(time.RFC3339),
-	}, nil
+	return parseCategory(category), nil
 }
 
 func (s *CategoryService) Get(ctx context.Context, req *pb.GetCategoryRequest) (*pb.Category, error) {
@@ -44,11 +40,7 @@ func (s *CategoryService) Get(ctx context.Context, req *pb.GetCategoryRequest) (
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Category{
-		Id:        category.ID,
-		Title:     category.Title,
-		CreatedAt: category.CreatedAt.Format(time.RFC3339),
-	}, nil
+	return parseCategory(category), nil
 }
 
 func (s *CategoryService) Update(ctx context.Context, req *pb.Category) (*pb.Category, error) {
@@ -60,11 +52,7 @@ func (s *CategoryService) Update(ctx context.Context, req *pb.Category) (*pb.Cat
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Category{
-		Id:        category.ID,
-		Title:     category.Title,
-		CreatedAt: category.CreatedAt.Format(time.RFC3339),
-	}, nil
+	return parseCategory(category), nil
 }
 
 func (s *CategoryService) Delete(ctx context.Context, req *pb.GetCategoryRequest) (*emptypb.Empty, error) {
@@ -74,4 +62,33 @@ func (s *CategoryService) Delete(ctx context.Context, req *pb.GetCategoryRequest
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *CategoryService) GetAll(ctx context.Context, req *pb.GetAllCategoryParamsReq) (*pb.GetAllCategoryResponse, error) {
+	categories, err := s.storage.Category().GetAll(&repo.GetAllCategoryParams{
+		Limit:  req.Limit,
+		Page:   req.Page,
+		Search: req.Search,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
+	}
+
+	res := pb.GetAllCategoryResponse{
+		Categories: make([]*pb.Category, 0),
+		Count:      int64(categories.Count),
+	}
+	for _, category := range categories.Categories {
+		p := parseCategory(category)
+		res.Categories = append(res.Categories, p)
+	}
+	return &res, nil
+}
+
+func parseCategory(req *repo.Category) *pb.Category {
+	return &pb.Category{
+		Id:        req.ID,
+		Title:     req.Title,
+		CreatedAt: req.CreatedAt.Format(time.RFC3339),
+	}
 }

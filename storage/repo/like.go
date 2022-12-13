@@ -9,11 +9,8 @@ type Like struct {
 
 type LikeStorageI interface {
 	CreateOrUpdate(like *Like) (*Like, error)
-	// Update(like *Like) error
 	Get(userID, postID int64) (*Like, error)
 	GetLikesDislikesCount(postID int64) (*LikesDislikesCountResult, error) 
-	// Delete(like_id int64) error
-	// GetAll(post_id int64) (*GetAllLikes, error)
 }
 
 type LikesDislikesCountResult struct {

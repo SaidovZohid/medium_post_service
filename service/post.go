@@ -35,17 +35,7 @@ func (s *PostService) Create(ctx context.Context, req *pb.Post) (*pb.Post, error
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Post{
-		Id:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		ImageUrl:    post.ImageUrl,
-		UserId:      post.UserID,
-		CategoryId:  post.CategoryID,
-		CreatedAt:   post.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   post.UpdatedAt.Format(time.RFC3339),
-		ViewsCount:  int64(post.ViewsCount),
-	}, nil
+	return parsePost(post), nil
 }
 
 func (s *PostService) Get(ctx context.Context, req *pb.GetPostRequest) (*pb.Post, error) {
@@ -54,17 +44,7 @@ func (s *PostService) Get(ctx context.Context, req *pb.GetPostRequest) (*pb.Post
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Post{
-		Id:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		ImageUrl:    post.ImageUrl,
-		UserId:      post.UserID,
-		CategoryId:  post.CategoryID,
-		CreatedAt:   post.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   post.UpdatedAt.Format(time.RFC3339),
-		ViewsCount:  int64(post.ViewsCount),
-	}, nil
+	return parsePost(post), nil
 }
 
 func (s *PostService) Update(ctx context.Context, req *pb.Post) (*pb.Post, error) {
@@ -80,17 +60,7 @@ func (s *PostService) Update(ctx context.Context, req *pb.Post) (*pb.Post, error
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
-	return &pb.Post{
-		Id:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		ImageUrl:    post.ImageUrl,
-		UserId:      post.UserID,
-		CategoryId:  post.CategoryID,
-		CreatedAt:   post.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:   post.UpdatedAt.Format(time.RFC3339),
-		ViewsCount:  int64(post.ViewsCount),
-	}, nil
+	return parsePost(post), nil
 }
 
 func (s *PostService) Delete(ctx context.Context, req *pb.GetPostRequest) (*emptypb.Empty, error) {
@@ -100,4 +70,42 @@ func (s *PostService) Delete(ctx context.Context, req *pb.GetPostRequest) (*empt
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *PostService) GetAll(ctx context.Context, req *pb.GetPostsParamsReq) (*pb.GetAllPostResponse, error) {
+	posts, err := s.storage.Post().GetAll(&repo.GetPostsParams{
+		Limit:      req.Limit,
+		Page:       req.Page,
+		Search:     req.Search,
+		UserID:     req.UserId,
+		CategoryID: req.CategoryId,
+		SortByDate: req.SortByDate,
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
+	}
+
+	res := pb.GetAllPostResponse{
+		Posts: make([]*pb.Post, 0),
+		Count: posts.Count,
+	}
+	for _, post := range posts.Posts {
+		p := parsePost(post)
+		res.Posts = append(res.Posts, p)
+	}
+	return &res, nil
+}
+
+func parsePost(req *repo.Post) *pb.Post {
+	return &pb.Post{
+		Id:          req.ID,
+		Title:       req.Title,
+		Description: req.Description,
+		ImageUrl:    req.ImageUrl,
+		UserId:      req.UserID,
+		CategoryId:  req.CategoryID,
+		CreatedAt:   req.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   req.UpdatedAt.Format(time.RFC3339),
+		ViewsCount:  int64(req.ViewsCount),
+	}
 }

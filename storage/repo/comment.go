@@ -8,7 +8,7 @@ type Comment struct {
 	UserID      int64
 	Description string
 	CreatedAt   time.Time
-	UpdatedAt   *time.Time
+	UpdatedAt   time.Time
 	User        CommentUser
 }
 
@@ -18,7 +18,7 @@ type UpdateComment struct {
 	UserID      int64
 	Description string
 	CreatedAt   time.Time
-	UpdatedAt   *time.Time
+	UpdatedAt   time.Time
 	User        CommentUser
 }
 
