@@ -35,6 +35,6 @@ type GetAllCommentsResult struct {
 type GetCommentsParams struct {
 	Limit  int64
 	Page   int64
-	UserID int64
 	PostID int64
+	SortBy string
 }

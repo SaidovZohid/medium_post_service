@@ -35,6 +35,7 @@ func (s *PostService) Create(ctx context.Context, req *pb.Post) (*pb.Post, error
 		CategoryID:  req.CategoryId,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to create post in create func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -44,6 +45,7 @@ func (s *PostService) Create(ctx context.Context, req *pb.Post) (*pb.Post, error
 func (s *PostService) Get(ctx context.Context, req *pb.GetPostRequest) (*pb.Post, error) {
 	post, err := s.storage.Post().Get(req.Id)
 	if err != nil {
+		s.logger.WithError(err).Error("failed to get post in get func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -60,6 +62,7 @@ func (s *PostService) Update(ctx context.Context, req *pb.Post) (*pb.Post, error
 		CategoryID:  req.CategoryId,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to update post in update func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -69,6 +72,7 @@ func (s *PostService) Update(ctx context.Context, req *pb.Post) (*pb.Post, error
 func (s *PostService) Delete(ctx context.Context, req *pb.GetPostRequest) (*emptypb.Empty, error) {
 	err := s.storage.Post().Delete(req.Id)
 	if err != nil {
+		s.logger.WithError(err).Error("failed to delete post in delete func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -85,6 +89,7 @@ func (s *PostService) GetAll(ctx context.Context, req *pb.GetPostsParamsReq) (*p
 		SortByDate: req.SortByDate,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to get all post in getall func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 

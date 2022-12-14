@@ -57,7 +57,7 @@ func (pr *commentRepo) Create(c *repo.Comment) (*repo.Comment, error) {
 
 func (cr *commentRepo) Update(c *repo.Comment) (*repo.Comment, error) {
 	var (
-		res repo.Comment
+		res       repo.Comment
 		updatedAt sql.NullTime
 	)
 	query := `
@@ -112,12 +112,11 @@ func (cr *commentRepo) Delete(commentId int64) error {
 
 	if res, _ := result.RowsAffected(); res == 0 {
 		return sql.ErrNoRows
-	} 
+	}
 
 	return nil
 }
 
-// i should correct this function 
 func (pr *commentRepo) GetAll(params *repo.GetCommentsParams) (*repo.GetAllCommentsResult, error) {
 	result := repo.GetAllCommentsResult{
 		Comments: make([]*repo.Comment, 0),
@@ -127,31 +126,27 @@ func (pr *commentRepo) GetAll(params *repo.GetCommentsParams) (*repo.GetAllComme
 
 	limit := fmt.Sprintf(" LIMIT %d OFFSET %d", params.Limit, offset)
 
-	filter := " WHERE true "
-	if params.UserID != 0 {
-		filter += fmt.Sprintf(" AND c.user_id = %d", params.UserID)
+	orderBy := " ORDER BY created_at DESC "
+	if params.SortBy != "" {
+		orderBy = fmt.Sprintf(" ORDER BY created_at %s", params.SortBy)
 	}
 
+	filter := ""
+
 	if params.PostID != 0 {
-		filter += fmt.Sprintf(" AND c.post_id = %d", params.PostID)
+		filter += fmt.Sprintf(" WHERE post_id = %d", params.PostID)
 	}
 
 	query := `
 		SELECT
-			c.id,
-			c.post_id,
-			c.user_id,
-			c.description,
-			c.created_at,
-			c.updated_at,
-			u.first_name,
-			u.last_name,
-			u.email,
-			u.profile_image_url
-		FROM comments c 
-		INNER JOIN users u 	ON c.user_id = u.id 
-	` + filter + `
-	ORDER BY c.created_at DESC` + limit
+			id,
+			post_id,
+			user_id,
+			description,
+			created_at,
+			updated_at
+		FROM comments 
+	` + filter + orderBy + limit
 
 	rows, err := pr.db.Query(query)
 	if err != nil {
@@ -160,27 +155,26 @@ func (pr *commentRepo) GetAll(params *repo.GetCommentsParams) (*repo.GetAllComme
 	defer rows.Close()
 
 	for rows.Next() {
-		var comment repo.Comment
+		var (
+			comment   repo.Comment
+			updatedAt sql.NullTime
+		)
 		err := rows.Scan(
 			&comment.ID,
 			&comment.PostID,
 			&comment.UserID,
 			&comment.Description,
 			&comment.CreatedAt,
-			&comment.UpdatedAt,
-			&comment.User.FirstName,
-			&comment.User.LastName,
-			&comment.User.Email,
-			&comment.User.ProfileImageUrl,
+			&updatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-
+		comment.UpdatedAt = updatedAt.Time
 		result.Comments = append(result.Comments, &comment)
 	}
 
-	queryCount := "SELECT count(1) FROM comments c INNER JOIN users u ON u.id = c.user_id" + filter
+	queryCount := "SELECT count(1) FROM comments " + filter
 
 	err = pr.db.QueryRow(queryCount).Scan(&result.Count)
 	if err != nil {

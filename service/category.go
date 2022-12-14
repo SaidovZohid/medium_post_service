@@ -31,6 +31,7 @@ func (s *CategoryService) Create(ctx context.Context, req *pb.Category) (*pb.Cat
 		Title: req.Title,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to create new category in create func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -40,6 +41,7 @@ func (s *CategoryService) Create(ctx context.Context, req *pb.Category) (*pb.Cat
 func (s *CategoryService) Get(ctx context.Context, req *pb.GetCategoryRequest) (*pb.Category, error) {
 	category, err := s.storage.Category().Get(req.Id)
 	if err != nil {
+		s.logger.WithError(err).Error("failed to get category in get func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -52,6 +54,7 @@ func (s *CategoryService) Update(ctx context.Context, req *pb.Category) (*pb.Cat
 		Title: req.Title,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to update category in update func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -61,6 +64,7 @@ func (s *CategoryService) Update(ctx context.Context, req *pb.Category) (*pb.Cat
 func (s *CategoryService) Delete(ctx context.Context, req *pb.GetCategoryRequest) (*emptypb.Empty, error) {
 	err := s.storage.Category().Delete(req.Id)
 	if err != nil {
+		s.logger.WithError(err).Error("failed to delete category in delete func ")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -74,6 +78,7 @@ func (s *CategoryService) GetAll(ctx context.Context, req *pb.GetAllCategoryPara
 		Search: req.Search,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("failed to get all categories in getall func")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
