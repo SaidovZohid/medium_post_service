@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -19,6 +20,9 @@ func NewComment(db *sqlx.DB) repo.CommentStorageI {
 }
 
 func (pr *commentRepo) Create(c *repo.Comment) (*repo.Comment, error) {
+	var (
+		updatedAt sql.NullTime
+	)
 	query := `
 		INSERT INTO comments (
 			post_id,
@@ -27,7 +31,8 @@ func (pr *commentRepo) Create(c *repo.Comment) (*repo.Comment, error) {
 		) VALUES ($1, $2, $3)
 		RETURNING 
 		id, 
-		created_at
+		created_at,
+		updated_at
 	`
 
 	err := pr.db.QueryRow(
@@ -38,52 +43,22 @@ func (pr *commentRepo) Create(c *repo.Comment) (*repo.Comment, error) {
 	).Scan(
 		&c.ID,
 		&c.CreatedAt,
+		&updatedAt,
 	)
 
 	if err != nil {
 		return nil, err
 	}
+
+	c.UpdatedAt = updatedAt.Time
 
 	return c, nil
 }
 
-func (pr *commentRepo) Get(comment_id int64) (*repo.Comment, error) {
+func (cr *commentRepo) Update(c *repo.Comment) (*repo.Comment, error) {
 	var (
 		res repo.Comment
-	)
-	query := `
-		SELECT
-			id,
-			post_id,
-			user_id,
-			description,
-			created_at,
-			updated_at,
-		FROM comments WHERE id = $1
-	`
-
-	err := pr.db.QueryRow(
-		query,
-		comment_id,
-	).Scan(
-		&res.ID,
-		&res.PostID,
-		&res.UserID,
-		&res.Description,
-		&res.CreatedAt,
-		&res.UpdatedAt,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-func (cr *commentRepo) Update(c *repo.UpdateComment) (*repo.UpdateComment, error) {
-	var (
-		res repo.UpdateComment
+		updatedAt sql.NullTime
 	)
 	query := `
 		UPDATE comments SET
@@ -110,33 +85,39 @@ func (cr *commentRepo) Update(c *repo.UpdateComment) (*repo.UpdateComment, error
 		&res.PostID,
 		&res.UserID,
 		&res.CreatedAt,
-		&res.UpdatedAt,
+		&updatedAt,
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
+	res.UpdatedAt = updatedAt.Time
+
 	return &res, nil
 }
 
-func (cr *commentRepo) Delete(comment_id int64) error {
+func (cr *commentRepo) Delete(commentId int64) error {
 	query := `
 		DELETE FROM comments WHERE id = $1
 	`
 
-	_, err := cr.db.Exec(
+	result, err := cr.db.Exec(
 		query,
-		comment_id,
+		commentId,
 	)
-
 	if err != nil {
 		return err
 	}
 
+	if res, _ := result.RowsAffected(); res == 0 {
+		return sql.ErrNoRows
+	} 
+
 	return nil
 }
 
+// i should correct this function 
 func (pr *commentRepo) GetAll(params *repo.GetCommentsParams) (*repo.GetAllCommentsResult, error) {
 	result := repo.GetAllCommentsResult{
 		Comments: make([]*repo.Comment, 0),

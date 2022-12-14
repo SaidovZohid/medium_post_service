@@ -48,7 +48,7 @@ func TestUpdateComment(t *testing.T) {
 	c := createComment(t)
 	post := createPost(t)
 	require.NotEmpty(t, c)
-	co, err := dbManager.Comment().Update(&repo.UpdateComment{
+	co, err := dbManager.Comment().Update(&repo.Comment{
 		PostID:      post.ID,
 		UserID:      1,
 		Description: faker.Sentence(),

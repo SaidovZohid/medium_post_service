@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS "comments"(
 
 CREATE TABLE IF NOT EXISTS "likes"(
     "id" SERIAL PRIMARY KEY,
-    "post_id" int not null,
+    "post_id" int not null REFERENCES posts(id),
     "user_id" int not null,
     "status" boolean not null,
     UNIQUE(post_id, user_id)

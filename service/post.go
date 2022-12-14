@@ -7,6 +7,7 @@ import (
 	pb "github.com/SaidovZohid/medium_post_service/genproto/post_service"
 	"github.com/SaidovZohid/medium_post_service/storage"
 	"github.com/SaidovZohid/medium_post_service/storage/repo"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,11 +16,13 @@ import (
 type PostService struct {
 	pb.UnimplementedPostServiceServer
 	storage storage.StorageI
+	logger  *logrus.Logger
 }
 
-func NewPostService(strg *storage.StorageI) *PostService {
+func NewPostService(strg *storage.StorageI, log *logrus.Logger) *PostService {
 	return &PostService{
 		storage: *strg,
+		logger:  log,
 	}
 }
 

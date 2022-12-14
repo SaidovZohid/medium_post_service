@@ -8,6 +8,7 @@ import (
 	"github.com/SaidovZohid/medium_post_service/config"
 	pb "github.com/SaidovZohid/medium_post_service/genproto/post_service"
 	grpcPkg "github.com/SaidovZohid/medium_post_service/pkg/grpc_client"
+	"github.com/SaidovZohid/medium_post_service/pkg/logger"
 	"github.com/SaidovZohid/medium_post_service/service"
 	"github.com/SaidovZohid/medium_post_service/storage"
 
@@ -36,15 +37,17 @@ func main() {
 
 	strg := storage.NewStoragePg(psqlConn)
 
+	log := logger.New()
+
 	grpcConn, err := grpcPkg.New(cfg)
 	if err != nil {
 		log.Fatalf("failed to connect to user service: %v", err)
 	}
 
-	postService := service.NewPostService(&strg)
-	categoryService := service.NewCategoryService(&strg)
-	likeService := service.NewLikeService(&strg)
-	commentService := service.NewCommentService(&strg, grpcConn)
+	postService := service.NewPostService(&strg, log)
+	categoryService := service.NewCategoryService(&strg, log)
+	likeService := service.NewLikeService(&strg, log)
+	commentService := service.NewCommentService(&strg, grpcConn, log)
 
 	listen, err := net.Listen("tcp", cfg.GrpcPort)
 
@@ -56,7 +59,7 @@ func main() {
 
 	reflection.Register(s)
 
-	log.Println("gRPC server started port in: ", cfg.GrpcPort)
+	log.Info("gRPC server started port in: ", cfg.GrpcPort)
 	if s.Serve(listen); err != nil {
 		log.Fatalf("Error while listening: %v", err)
 	}

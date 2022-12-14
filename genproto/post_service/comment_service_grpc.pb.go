@@ -25,7 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CommentServiceClient interface {
 	Create(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*Comment, error)
 	Update(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*Comment, error)
-	Delete(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Delete(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetAll(ctx context.Context, in *GetAllCommentsParamsReq, opts ...grpc.CallOption) (*GetAllCommentsResponse, error)
 }
 
@@ -55,7 +55,7 @@ func (c *commentServiceClient) Update(ctx context.Context, in *Comment, opts ...
 	return out, nil
 }
 
-func (c *commentServiceClient) Delete(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *commentServiceClient) Delete(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/genproto.CommentService/Delete", in, out, opts...)
 	if err != nil {
@@ -79,7 +79,7 @@ func (c *commentServiceClient) GetAll(ctx context.Context, in *GetAllCommentsPar
 type CommentServiceServer interface {
 	Create(context.Context, *Comment) (*Comment, error)
 	Update(context.Context, *Comment) (*Comment, error)
-	Delete(context.Context, *GetCommentRequest) (*empty.Empty, error)
+	Delete(context.Context, *DeleteCommentRequest) (*empty.Empty, error)
 	GetAll(context.Context, *GetAllCommentsParamsReq) (*GetAllCommentsResponse, error)
 	mustEmbedUnimplementedCommentServiceServer()
 }
@@ -94,7 +94,7 @@ func (UnimplementedCommentServiceServer) Create(context.Context, *Comment) (*Com
 func (UnimplementedCommentServiceServer) Update(context.Context, *Comment) (*Comment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedCommentServiceServer) Delete(context.Context, *GetCommentRequest) (*empty.Empty, error) {
+func (UnimplementedCommentServiceServer) Delete(context.Context, *DeleteCommentRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedCommentServiceServer) GetAll(context.Context, *GetAllCommentsParamsReq) (*GetAllCommentsResponse, error) {
@@ -150,7 +150,7 @@ func _CommentService_Update_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _CommentService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCommentRequest)
+	in := new(DeleteCommentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func _CommentService_Delete_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/genproto.CommentService/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServiceServer).Delete(ctx, req.(*GetCommentRequest))
+		return srv.(CommentServiceServer).Delete(ctx, req.(*DeleteCommentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

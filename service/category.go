@@ -7,6 +7,7 @@ import (
 	pb "github.com/SaidovZohid/medium_post_service/genproto/post_service"
 	"github.com/SaidovZohid/medium_post_service/storage"
 	"github.com/SaidovZohid/medium_post_service/storage/repo"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,11 +16,13 @@ import (
 type CategoryService struct {
 	pb.UnimplementedCategoryServiceServer
 	storage storage.StorageI
+	logger  *logrus.Logger
 }
 
-func NewCategoryService(strg *storage.StorageI) *CategoryService {
+func NewCategoryService(strg *storage.StorageI, log *logrus.Logger) *CategoryService {
 	return &CategoryService{
 		storage: *strg,
+		logger:  log,
 	}
 }
 

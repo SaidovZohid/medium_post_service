@@ -6,6 +6,7 @@ import (
 	pb "github.com/SaidovZohid/medium_post_service/genproto/post_service"
 	"github.com/SaidovZohid/medium_post_service/storage"
 	"github.com/SaidovZohid/medium_post_service/storage/repo"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -13,11 +14,13 @@ import (
 type LikeService struct {
 	pb.UnimplementedLikeServiceServer
 	storage storage.StorageI
+	logger  *logrus.Logger
 }
 
-func NewLikeService(strg *storage.StorageI) *LikeService {
+func NewLikeService(strg *storage.StorageI, log *logrus.Logger) *LikeService {
 	return &LikeService{
 		storage: *strg,
+		logger:  log,
 	}
 }
 
@@ -28,6 +31,7 @@ func (s *LikeService) CreateOrUpdate(ctx context.Context, req *pb.Like) (*pb.Lik
 		Status: req.Status,
 	})
 	if err != nil {
+		s.logger.WithError(err).Error("error in create or update like service")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
@@ -37,6 +41,7 @@ func (s *LikeService) CreateOrUpdate(ctx context.Context, req *pb.Like) (*pb.Lik
 func (s *LikeService) Get(ctx context.Context, req *pb.GetLikeRequest) (*pb.Like, error) {
 	like, err := s.storage.Like().Get(req.UserId, req.PostId)
 	if err != nil {
+		s.logger.WithError(err).Error("error in get like service")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 	return parseLike(like), nil
@@ -45,6 +50,7 @@ func (s *LikeService) Get(ctx context.Context, req *pb.GetLikeRequest) (*pb.Like
 func (s *LikeService) GetLikesDislikesCount(ctx context.Context, req *pb.GetLikesRequest) (*pb.LikesDislikesCountResponse, error) {
 	counts, err := s.storage.Like().GetLikesDislikesCount(req.PostId)
 	if err != nil {
+		s.logger.WithError(err).Error("error in get likes and dislike count in like service")
 		return nil, status.Errorf(codes.Internal, "internal server error: %v", err)
 	}
 
