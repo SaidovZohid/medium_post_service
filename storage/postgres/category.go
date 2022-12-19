@@ -124,7 +124,7 @@ func (ur *categoryRepo) GetAll(params *repo.GetAllCategoryParams) (*repo.GetAllC
 
 	filter := ""
 	if params.Search != "" {
-		filter = "WHERE title ILIKE '%s'" + "%" + params.Search + "%"
+		filter = fmt.Sprintf("WHERE title ILIKE '%s'", "%" + params.Search + "%")
 	}
 
 	query := `
